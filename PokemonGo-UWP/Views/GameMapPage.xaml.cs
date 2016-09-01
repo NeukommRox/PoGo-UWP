@@ -25,6 +25,7 @@ namespace PokemonGo_UWP.Views
     /// </summary>
     public sealed partial class GameMapPage : Page
     {
+        private readonly object lockObject = new object();
         private int _mapBoxIndex = -1;
         private Geopoint lastAutoPosition;
         private Button ReactivateMapAutoUpdateButton;
@@ -151,9 +152,13 @@ namespace PokemonGo_UWP.Views
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
+                lock (lockObject)
+                {
                     lastAutoPosition = null;
-                    UpdateMap();
-						});
+                    UpdateMap(GameClient.Geoposition,
+                        GameMapControl.Heading != GameClient.Geoposition.Coordinate.Heading);
+                }
+            });
         }
 
         private void GameMapControl_TargetCameraChanged(MapControl sender, MapTargetCameraChangedEventArgs args)
@@ -165,12 +170,12 @@ namespace PokemonGo_UWP.Views
         private void GameMapControl_OnZoomLevelChanged(MapControl sender, object args)
         {
             var currentZoomLevel = sender.ZoomLevel;
-            sender.ZoomLevel = currentZoomLevel < 18 ? 18 : currentZoomLevel;
+            sender.ZoomLevel = currentZoomLevel < 17 ? 17 : currentZoomLevel;
         }
 
         #region Overrides of Page
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
             // Hide PokeMenu panel just in case
@@ -185,10 +190,9 @@ namespace PokemonGo_UWP.Views
                     SetupMap();
             }
             // Set first position if we shomehow missed it
-                UpdateMap();
-			await GameMapControl.TryRotateToAsync(SettingsService.Instance.MapHeading);
-			await GameMapControl.TryTiltToAsync(SettingsService.Instance.MapPitch);
-			SubscribeToCaptureEvents();
+            if (GameClient.Geoposition != null)
+                UpdateMap(GameClient.Geoposition);
+            SubscribeToCaptureEvents();
             SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
         }
 
@@ -206,11 +210,9 @@ namespace PokemonGo_UWP.Views
             SystemNavigationManager.GetForCurrentView().BackRequested -= OnBackRequested;
             if (SettingsService.Instance.IsRememberMapZoomEnabled)
                 SaveZoomLevel();
-				SettingsService.Instance.MapPitch = GameMapControl.Pitch;
-			SettingsService.Instance.MapHeading = GameMapControl.Heading;
-		}
+        }
 
-		private void SaveZoomLevel()
+        private void SaveZoomLevel()
         {
             // Bug fix for Issue 586
             if ((SettingsService.Instance.Zoomlevel == 0) || (GameMapControl.ZoomLevel == 0))
@@ -229,24 +231,20 @@ namespace PokemonGo_UWP.Views
 
         #region Handlers
 
-        private async void UpdateMap()
+        private async void UpdateMap(Geoposition position, bool shouldPreserveHeading = false)
         {
-
-			if (GameClient.Geoposition != null)
-			{ 
-				await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
+                lock (lockObject)
+                {
                     // Set player icon's position
-                    MapControl.SetLocation(PlayerImage, GameClient.Geoposition.Coordinate.Point);
+                    MapControl.SetLocation(PlayerImage, position.Coordinate.Point);
 
                     // Update angle and center only if map is not being manipulated
                     if (lastAutoPosition == null)
                     {
-									//Reset of position or first run
-									//Save Center
                         lastAutoPosition = GameMapControl.Center;
-									//Reset orientation to default
-                        if (GameMapControl.Heading == GameClient.Geoposition.Coordinate.Heading)
+                        if (!shouldPreserveHeading)
                             GameMapControl.Heading = 0;
                     }
 
@@ -259,21 +257,19 @@ namespace PokemonGo_UWP.Views
                     {
                         //Previous position was set automatically, continue!
                         ReactivateMapAutoUpdateButton.Visibility = Visibility.Collapsed;
-                        GameMapControl.Center = GameClient.Geoposition.Coordinate.Point;
-												//await GameMapControl.TrySetViewAsync(GameClient.Geoposition.Coordinate.Point);
-
+                        GameMapControl.Center = position.Coordinate.Point;
                         lastAutoPosition = GameMapControl.Center;
 
                         if ((SettingsService.Instance.MapAutomaticOrientationMode == MapAutomaticOrientationModes.GPS) &&
-                            (GameClient.Geoposition.Coordinate.Heading != null))
-                            await GameMapControl.TryRotateToAsync( GameClient.Geoposition.Coordinate.Heading.Value);
+                            (position.Coordinate.Heading != null))
+                            GameMapControl.Heading = position.Coordinate.Heading.Value;
 
                         if (SettingsService.Instance.IsRememberMapZoomEnabled)
                             GameMapControl.ZoomLevel = SettingsService.Instance.Zoomlevel;
                     }
-						});
-			}
-		}
+                }
+            });
+        }
 
         private void SubscribeToCaptureEvents()
         {
@@ -292,7 +288,7 @@ namespace PokemonGo_UWP.Views
             {
                 await
                     Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                        async () => { await GameMapControl.TryRotateToAsync(e.HeadingTrueNorth ?? e.HeadingMagneticNorth); });
+                        () => { GameMapControl.Heading = e.HeadingTrueNorth ?? e.HeadingMagneticNorth; });
                 tick = newTick;
             }
         }
@@ -306,7 +302,7 @@ namespace PokemonGo_UWP.Views
 
         private void GeopositionUpdated(object sender, Geoposition e)
         {
-            UpdateMap();
+            UpdateMap(e);
         }
 
         private void ViewModelOnLevelUpRewardsAwarded(object sender, EventArgs eventArgs)
