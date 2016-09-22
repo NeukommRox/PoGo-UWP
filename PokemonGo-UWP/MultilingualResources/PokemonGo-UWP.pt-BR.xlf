@@ -235,7 +235,7 @@
         </trans-unit>
         <trans-unit id="SteelDescription" translate="yes" xml:space="preserve">
           <source>Caught {0} Steel Pokemon</source>
-          <target state="translated">Capturou {0} Pokémon tipo Aço</target>
+          <target state="translated">Capturou {0} Pokémon tipo Metal</target>
         </trans-unit>
         <trans-unit id="WaterDescription" translate="yes" xml:space="preserve">
           <source>Caught {0} Water Pokemon</source>
@@ -823,13 +823,13 @@ Você também ganhou {1} em Poeira Estelar, {2} Doces e {3} XP.</target>
         </trans-unit>
         <trans-unit id="AppraiseTextBlock.Text" translate="yes" xml:space="preserve">
           <source>APPRAISE</source>
-          <target state="needs-review-translation">APPRAISE</target>
+          <target state="needs-review-translation">ESTUDAR</target>
           <note from="MultilingualBuild" annotates="source" priority="2">Capslock</note>
           <note from="MultilingualEditor" annotates="source" priority="4">Não sei como traduzir, talvez "AVALIAR"?</note>
         </trans-unit>
         <trans-unit id="AwardedExperienceTextBlock.Text" translate="yes" xml:space="preserve">
           <source>Experience</source>
-          <target state="new">Experience</target>
+          <target state="new">Experiência</target>
         </trans-unit>
         <trans-unit id="EggsHeader.Title" translate="yes" xml:space="preserve">
           <source>EGGS</source>
@@ -841,19 +841,19 @@ Você também ganhou {1} em Poeira Estelar, {2} Doces e {3} XP.</target>
         </trans-unit>
         <trans-unit id="FortAlreadyHasModifierTextBlock.Text" translate="yes" xml:space="preserve">
           <source>This pokestop already has a lure module installed</source>
-          <target state="new">This pokestop already has a lure module installed</target>
+          <target state="new">Esse pokestop já possui uma Isca para Pokémon ativa</target>
         </trans-unit>
         <trans-unit id="NoItemInInventoryTextBlock.Text" translate="yes" xml:space="preserve">
           <source>There is no troy disc in your inventory</source>
-          <target state="new">There is no troy disc in your inventory</target>
+          <target state="new">Você não possui Isca para Pokémon em seu inventário</target>
         </trans-unit>
         <trans-unit id="TooFarAwayTextBlock.Text" translate="yes" xml:space="preserve">
           <source>This pokestop is too far away</source>
-          <target state="new">This pokestop is too far away</target>
+          <target state="new">Esse pokestop está fora do alcance</target>
         </trans-unit>
         <trans-unit id="AddModifierSuccessTextBlock.Text" translate="yes" xml:space="preserve">
           <source>Successfully added lure module</source>
-          <target state="new">Successfully added lure module</target>
+          <target state="new">Isca para Pokémon instalada com sucesso.</target>
         </trans-unit>
       </group>
     </body>
@@ -3106,7 +3106,7 @@ Você também ganhou {1} em Poeira Estelar, {2} Doces e {3} XP.</target>
         </trans-unit>
         <trans-unit id="Steel" translate="yes" xml:space="preserve">
           <source>Steel</source>
-          <target state="final">Aço</target>
+          <target state="final">Metal</target>
         </trans-unit>
         <trans-unit id="Water" translate="yes" xml:space="preserve">
           <source>Water</source>
